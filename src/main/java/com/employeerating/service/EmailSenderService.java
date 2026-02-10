@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.employeerating.model.FileAttachmentModel;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -24,5 +25,9 @@ public interface EmailSenderService {
 
     void sendEmailWithAttachmentToHr(FileAttachmentModel model);
 
-    void sendEmailWithAttachmentToPerTl(List<Rating> employees);
+    void sendEmailWithAttachmentToPerTl(List<Rating> employees) throws IOException;
+
+	void sendMonthlyExcelReportToAllEmployees();
+
+	void sendWeeklyExcelReportToAllEmployees();
 }

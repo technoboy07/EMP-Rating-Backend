@@ -48,50 +48,50 @@ public class EmployeeServiceImple implements EmployeeService {
 	@Autowired
 	EntityManager entityManager;
 
-    @Override
-    public ResponseEntity<?> save(List<EmployeeDto> dto) {
-        if (dto.isEmpty()) {
-            return new ResponseEntity<>("Please fill the form", HttpStatus.NOT_ACCEPTABLE);
-        }
+	@Override
+	public ResponseEntity<?> save(List<EmployeeDto> dto) {
+		if (dto.isEmpty()) {
+			return new ResponseEntity<>("Please fill the form", HttpStatus.NOT_ACCEPTABLE);
+		}
 
-        List<Employee> savingEmployee = dto.stream().map(employeeDto -> {
-            Employee e = mapper.map(employeeDto, Employee.class);
+		List<Employee> savingEmployee = dto.stream().map(employeeDto -> {
+			Employee e = mapper.map(employeeDto, Employee.class);
 
-            // Create default rating entry (optional)
-            Rating rating = new Rating();
-            rating.setEmployee(e);
+			// Create default rating entry (optional)
+			Rating rating = new Rating();
+			rating.setEmployee(e);
 
-            // Initialize and assign ratings list
-            List<Rating> ratings = new ArrayList<>();
-            ratings.add(rating);
-            e.setRatings(ratings);
+			// Initialize and assign ratings list
+			List<Rating> ratings = new ArrayList<>();
+			ratings.add(rating);
+			e.setRatings(ratings);
 
-            return e;
-        }).collect(Collectors.toList());
+			return e;
+		}).collect(Collectors.toList());
 
-        List<Employee> savedEmployees = employeeRepo.saveAll(savingEmployee);
+		List<Employee> savedEmployees = employeeRepo.saveAll(savingEmployee);
 
-        List<EmployeeDto> returningDto = savedEmployees.stream()
-                .map(returnDto -> mapper.map(returnDto, EmployeeDto.class))
-                .collect(Collectors.toList());
+		List<EmployeeDto> returningDto = savedEmployees.stream()
+				.map(returnDto -> mapper.map(returnDto, EmployeeDto.class))
+				.collect(Collectors.toList());
 
-        return new ResponseEntity<>(returningDto, HttpStatus.OK);
-    }
-
-
+		return new ResponseEntity<>(returningDto, HttpStatus.OK);
+	}
 
 
 
-    public EmployeeResponse fetchEmployeeById(String employeeId) {
 
-        Employee e = employeeRepo.findAllByEmployeeId(employeeId);
 
-        EmployeeResponse employeeResponse = new EmployeeResponse();
-        employeeResponse.setEmployeeId(e.getEmployeeId());
-        employeeResponse.setEmployeeName(e.getEmployeeName());
-        employeeResponse.setRole(e.getEmployeeRole());
-        return employeeResponse;
-    }
+	public EmployeeResponse fetchEmployeeById(String employeeId) {
+
+		Employee e = employeeRepo.findAllByEmployeeId(employeeId);
+
+		EmployeeResponse employeeResponse = new EmployeeResponse();
+		employeeResponse.setEmployeeId(e.getEmployeeId());
+		employeeResponse.setEmployeeName(e.getEmployeeName());
+		employeeResponse.setRole(e.getEmployeeRole());
+		return employeeResponse;
+	}
 	@Override
 	public ResponseEntity<?> fetchAll() {
 		List<Employee> employees = employeeRepo.findByNoticePeriodFalseAndProbationaPeriodFalse();
@@ -102,11 +102,11 @@ public class EmployeeServiceImple implements EmployeeService {
 	public ResponseEntity<?> fetchAllByTeamLeadEmail(String teamLeadEmail) {
 		List<Employee> employees = employeeRepo.findByTeamLeadEmail(teamLeadEmail);
 		List<TeamLeadEmployeeDto> teamLeadEmployees = employees.stream()
-			.map(employee -> new TeamLeadEmployeeDto(
-				employee.getEmployeeId(),
-				employee.getEmployeeName()
-			))
-			.collect(Collectors.toList());
+				.map(employee -> new TeamLeadEmployeeDto(
+						employee.getEmployeeId(),
+						employee.getEmployeeName()
+				))
+				.collect(Collectors.toList());
 		return new ResponseEntity<List<TeamLeadEmployeeDto>>(teamLeadEmployees, HttpStatus.OK);
 	}
 
@@ -137,27 +137,33 @@ public class EmployeeServiceImple implements EmployeeService {
 
 	@Override
 	public ResponseEntity<?> deleteDetails(String empid) {
+
 		Optional<Employee> savedEmployee = employeeRepo.findByEmployeeId(empid);
-		if (savedEmployee.isEmpty())
-			return new ResponseEntity<String>("No data found successfully", HttpStatus.NOT_FOUND);
-		else {
-			employeeRepo.deleteById(savedEmployee.get().getId());
-			return new ResponseEntity<String>("Employee deleted successfully", HttpStatus.NOT_FOUND);
+
+		if (savedEmployee.isEmpty()) {
+			return ResponseEntity
+					.status(HttpStatus.NOT_FOUND)
+					.body("No employee found with id " + empid);
 		}
+
+		employeeRepo.deleteById(savedEmployee.get().getId());
+
+		return ResponseEntity.ok("Employee deleted successfully");
 	}
 
 
-	@Override
-	public byte[] generateEmployeeExcel(String employeeId) {
-        Employee employee = employeeRepo.findByEmployeeId(employeeId)
-            .orElseThrow(() -> new RuntimeException("Employee not found with ID: " + employeeId));
 
-        try {
-            return ExcelGenerator.generateExcelForEmployee(employee);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to generate Excel: " + e.getMessage());
-        }
-    }
+//	@Override
+//	public byte[] generateEmployeeExcel(String employeeId) {
+//        Employee employee = employeeRepo.findByEmployeeId(employeeId)
+//            .orElseThrow(() -> new RuntimeException("Employee not found with ID: " + employeeId));
+//
+//        try {
+//            return ExcelGenerator.generateExcelForEmployee(employee);
+//        } catch (IOException e) {
+//            throw new RuntimeException("Failed to generate Excel: " + e.getMessage());
+//        }
+//    }
 
 	@Override
 	public byte[] generateEmployeesExcel(String projectManagerEmail) throws InvalidFormatException {
@@ -197,7 +203,7 @@ public class EmployeeServiceImple implements EmployeeService {
 			employee.setLeaveDate(dto.getLeaveDate());
 			employee.setNoticePeriod(dto.isNoticePeriod());
 			employee.setProbationaPeriod(dto.isProbationaPeriod());
-			
+
 			// Set default values for authentication fields if not present
 			if (employee.getPassword() == null || employee.getPassword().isEmpty()) {
 				employee.setPassword("Rumango@123");
@@ -205,47 +211,47 @@ public class EmployeeServiceImple implements EmployeeService {
 			if (employee.getEmployeeRole() == null || employee.getEmployeeRole().isEmpty()) {
 				employee.setEmployeeRole("Developer");
 			}
-			
+
 			Employee saved = employeeRepo.save(employee);
 			EmployeeDto returningDto = mapper.map(saved, EmployeeDto.class);
 			return new ResponseEntity<EmployeeDto>(returningDto, HttpStatus.OK);
 		}
 	}
 
-    @Override
-    public ResponseEntity<?> saveSingleEmployee(EmployeeDto dto) {
-        Employee employee = mapper.map(dto, Employee.class);
+	@Override
+	public ResponseEntity<?> saveSingleEmployee(EmployeeDto dto) {
+		Employee employee = mapper.map(dto, Employee.class);
 
-        // Set default values for authentication fields
-        if (employee.getPassword() == null || employee.getPassword().isEmpty()) {
-            employee.setPassword("Rumango@123");
-        }
-        if (employee.getEmployeeRole() == null || employee.getEmployeeRole().isEmpty()) {
-            employee.setEmployeeRole("Developer");
-        }
+		// Set default values for authentication fields
+		if (employee.getPassword() == null || employee.getPassword().isEmpty()) {
+			employee.setPassword("Rumango@123");
+		}
+		if (employee.getEmployeeRole() == null || employee.getEmployeeRole().isEmpty()) {
+			employee.setEmployeeRole("Developer");
+		}
 
-        // Initialize a new Rating and set relationship
-        Rating rating = new Rating();
-        rating.setEmployee(employee);
+		// Initialize a new Rating and set relationship
+		Rating rating = new Rating();
+		rating.setEmployee(employee);
 
-        // Initialize list of ratings and add the default rating
-        List<Rating> ratings = new ArrayList<>();
-        ratings.add(rating);
-        employee.setRatings(ratings);
+		// Initialize list of ratings and add the default rating
+		List<Rating> ratings = new ArrayList<>();
+		ratings.add(rating);
+		employee.setRatings(ratings);
 
-        // Save employee (cascade will save ratings too)
-        Employee saved = employeeRepo.save(employee);
+		// Save employee (cascade will save ratings too)
+		Employee saved = employeeRepo.save(employee);
 
-        EmployeeDto returningDto = mapper.map(saved, EmployeeDto.class);
-        return new ResponseEntity<>(returningDto, HttpStatus.OK);
-    }
+		EmployeeDto returningDto = mapper.map(saved, EmployeeDto.class);
+		return new ResponseEntity<>(returningDto, HttpStatus.OK);
+	}
 
 
-    @Override
+	@Override
 	public List<String> getAllEmployeeIds() {
 		return employeeRepo.findAll().stream().map(e -> e.getEmployeeId()).collect(Collectors.toList());
 	}
-	
+
 	@Override
 	public ResponseEntity<?> save(com.employeerating.dto.FormData formData) {
 		// Implementation for FormData save method
@@ -262,7 +268,7 @@ public class EmployeeServiceImple implements EmployeeService {
 	public byte[] generateEmployeesExcelHr() {
 		// Implementation for HR Excel generation
 		return new byte[0];
-    }
+	}
 
 
 

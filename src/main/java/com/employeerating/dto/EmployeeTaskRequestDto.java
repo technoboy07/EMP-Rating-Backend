@@ -12,24 +12,23 @@ import lombok.Data;
 public class EmployeeTaskRequestDto {
     private LocalDate date;
 
-    @JsonProperty("project")   // Angular sends "project"
+    @JsonProperty("project")   
     private String projectName;
 
-    @JsonProperty("taskTitle") // Angular sends "taskTitle"
+    @JsonProperty("taskTitle") 
     private String taskName;
 
     private String description;
     private String status;
 
-    // Angular sends as string "HH:mm", need @JsonFormat
-    @JsonFormat(pattern = "HH:mm")
-    private LocalTime hours;
+    private String hours;
+    private String extraHours;
 
-    @JsonFormat(pattern = "HH:mm")
-    private LocalTime extraHours;
 
     private String prLink;
     private String teamLead;
     private String fileName;
 }
+
+
 

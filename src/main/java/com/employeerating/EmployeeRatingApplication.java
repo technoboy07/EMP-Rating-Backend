@@ -32,33 +32,7 @@ public class EmployeeRatingApplication extends SpringBootServletInitializer {
     public static void main(String[] args) throws IOException {
         SpringApplication.run(EmployeeRatingApplication.class, args);
 
-
-//        List<Employee> employees = new ArrayList<>();
-//
-//        // create some dummy data
-//        Employee e1 = new Employee();
-//        e1.setEmployeeId("EMP001");
-//        e1.setEmployeeName("John Doe");
-//        e1.setEmployeeTasks(List.of(
-////                new EmployeeTask("Task1", LocalDate.now()),
-////                new EmployeeTask("Task2", LocalDate.now().minusDays(1))
-//        ));
-//        e1.setRatings(List.of(
-//                new Rating(LocalDate.now(), 4),
-//                new Rating(LocalDate.now().minusDays(1), 5)
-//        ));
-//
-//        employees.add(e1);
-//
-//        byte[] excelData = ExcelGenerator.generateExcelForEmployees(employees);
-//
-//        // write to file
-//        try (FileOutputStream fos = new FileOutputStream("employees.xlsx")) {
-//            fos.write(excelData);
-//        }
-//
-//        System.out.println("Excel generated: employees.xlsx");
-    }
+            }
 
     @Bean
     public ModelMapper getMapper() {

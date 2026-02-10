@@ -8,5 +8,7 @@ public interface EmailSchedulerService {
 	void sendEmailToPm();
 	void sendEmailToPmo();
 	void sendEmailToHr();
-    List<String> deletePreviousRatings();
+    List<String> deletePreviousRatings(); 
+    void sendMonthlyReports();
+    void sendWeeklyReports();
 }

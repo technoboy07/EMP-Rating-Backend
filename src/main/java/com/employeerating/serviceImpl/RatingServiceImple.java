@@ -36,7 +36,11 @@ public class RatingServiceImple implements RatingService {
 
     @Autowired
     EmployeeTaskRepository taskRepository;
-
+    
+    
+    
+    
+// Chat gpt code    
     @Override
     @Transactional
     public void saveRatings(RatingSubmissionDto submission) {
@@ -44,43 +48,95 @@ public class RatingServiceImple implements RatingService {
         LocalDate ratingDate = submission.getDate();
         String teamLeadId = submission.getTeamLeadId();
 
+        
         Employee teamLead = employeeRepository.findByEmployeeId(teamLeadId)
                 .orElseThrow(() -> new EmployeeNotFoundException("Team Lead not found: " + teamLeadId));
+
         String teamLeadEmail = teamLead.getEmployeeEmail();
 
+        
         for (RatingTaskRequestDto dto : submission.getEvaluations()) {
 
             String employeeId = dto.getEmployeeId();
 
+            // Fetch employee from DB
             Employee employee = employeeRepository.findByEmployeeId(employeeId)
                     .orElseThrow(() -> new EmployeeNotFoundException("Employee not found: " + employeeId));
 
-            Rating rating = ratingRepository.findByEmployeeAndRatingDate(employee,  ratingDate)
-                    .orElse(null);
+            Rating rating = ratingRepository
+                    .findByEmployeeAndRatingDateAndRatedBy(employee, ratingDate, teamLeadId);
 
+            // Create new rating if none exists
             if (rating == null) {
                 rating = new Rating();
                 rating.setEmployee(employee);
-                //rating.setTask(task);
                 rating.setRatingDate(ratingDate);
-                rating.setRatedBy(teamLeadId);
+                rating.setRatedBy(teamLeadId);   
+               // rating.setTeamLeadId(teamLeadId);       
+                rating.setTeamLeadEmail(teamLeadEmail); 
             }
 
+            // Update rating values (works for both create and update)
             rating.setRating(dto.getRating());
             rating.setRemarks(dto.getRemarks());
-            rating.setTeamLeadEmail(teamLeadEmail);
 
-
-
-
+            // Save rating to DB
             ratingRepository.save(rating);
 
-//             Optional: update overall rating
-            Double avg = ratingRepository.findAverageByEmployee(employee.getId());
-            employee.setOverallRating(avg != null ? avg : 0);
-            employeeRepository.save(employee);
+//            // Recalculate overall rating for employee
+//            Double avg = ratingRepository.findAverageByEmployee(employee.getId());
+//            employee.setOverallRating(avg != null ? avg : 0);
+//            employeeRepository.save(employee);
         }
     }
+
+    
+//		MOrg Commented
+//    @Override
+//    @Transactional
+//    public void saveRatings(RatingSubmissionDto submission) {
+//
+//        LocalDate ratingDate = submission.getDate();
+//        String teamLeadId = submission.getTeamLeadId();
+//
+//        Employee teamLead = employeeRepository.findByEmployeeId(teamLeadId)
+//                .orElseThrow(() -> new EmployeeNotFoundException("Team Lead not found: " + teamLeadId));
+//
+//        String teamLeadEmail = teamLead.getEmployeeEmail();
+//
+//        for (RatingTaskRequestDto dto : submission.getEvaluations()) {
+//
+//            String employeeId = dto.getEmployeeId();
+//
+//            Employee employee = employeeRepository.findByEmployeeId(employeeId)
+//                    .orElseThrow(() -> new EmployeeNotFoundException("Employee not found: " + employeeId));
+//
+//            // IMPORTANT CHANGE — now checking with TL (ratedBy)
+//            Rating rating = ratingRepository
+//                    .findByEmployeeAndRatingDateAndRatedBy(employee, ratingDate, teamLeadId);
+//
+//            // If no rating from this TL for this employee for this day → create new
+//            if (rating == null) {
+//                rating = new Rating();
+//                rating.setEmployee(employee);
+//                rating.setRatingDate(ratingDate);
+//                rating.setRatedBy(teamLeadId);   // identify TL
+//            }
+//
+//            // update values
+//            rating.setRating(dto.getRating());
+//            rating.setRemarks(dto.getRemarks());
+//            rating.setTeamLeadEmail(teamLeadEmail);
+//
+//            ratingRepository.save(rating);
+//
+//            // recalc overall rating
+//            Double avg = ratingRepository.findAverageByEmployee(employee.getId());
+//            employee.setOverallRating(avg != null ? avg : 0);
+//            employeeRepository.save(employee);
+//        }
+//    }
+
 
 /*
 //my Imp
@@ -123,6 +179,7 @@ public class RatingServiceImple implements RatingService {
 
 
     @Override
+    @Transactional
     public ResponseEntity<?> saveTeamLeadDailyRatings(TeamLeadDailyRatingDto dto, String teamLeadEmail) {
         List<String> saved = new ArrayList<>();
         List<String> errors = new ArrayList<>();
@@ -136,12 +193,25 @@ public class RatingServiceImple implements RatingService {
             String employeeId = employeeRating.getEmployeeId();
             Integer rating = employeeRating.getRating();
             String employeeRemark = employeeRating.getEmployeeRemark();
-            Long taskId = employeeRating.getTaskId(); // assuming you added taskId to DTO
-            try {
-                taskId = Long.parseLong(employeeId);
-            } catch (NumberFormatException e) {
-                errors.add("Invalid employeeId: " + employeeId);
+            Long taskId = employeeRating.getTaskId(); // Get taskId from DTO
+
+
+
+// Validate rating value (1-5)
+            if (rating == null || rating < 1 || rating > 5) {
+                errors.add("Invalid rating for employee " + employeeId + ": " + rating + " (must be 1-5)");
                 continue;
+            }
+
+// Fetch the task if provided (taskId can be null - it's optional)
+            EmployeeTask task = null;
+            if (taskId != null) {
+                task = taskRepository.findById(taskId)
+                        .orElse(null);
+                if (task == null) {
+                    errors.add("Task not found with ID: " + taskId + " for employee " + employeeId);
+                    continue;
+                }
             }
 
             // Validate employee belongs to team lead
@@ -157,16 +227,6 @@ public class RatingServiceImple implements RatingService {
                 continue;
             }
 
-            // Fetch the task if provided
-            EmployeeTask task = null;
-            if (taskId != null) {
-                task = taskRepository.findById(taskId)
-                        .orElse(null); // if task not found, we can leave it null
-                if (task == null) {
-                    errors.add("Task not found with ID: " + taskId + " for employee " + employeeId);
-                    continue;
-                }
-            }
 
             // Check if rating already exists for this employee and date
             Optional<Rating> existingRating = ratingRepository.findByEmployeeIdAndRatingDate(employeeId, dto.getRatingDate());

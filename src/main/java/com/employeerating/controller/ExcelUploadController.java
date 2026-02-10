@@ -22,14 +22,14 @@ public class ExcelUploadController {
     public ResponseEntity<String> uploadExcel(@RequestParam("file") MultipartFile file) {
         try {
             if (file.isEmpty()) {
-                return ResponseEntity.badRequest().body("❌ Please select an Excel file to upload.");
+                return ResponseEntity.badRequest().body(" Please select an Excel file to upload.");
             }
 
             excelUploadService.uploadExcel(file);
-            return ResponseEntity.ok("✅ Excel uploaded and users saved to DB successfully.");
+            return ResponseEntity.ok(" Excel uploaded and users saved to DB successfully.");
 
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("❌ Failed to upload Excel: " + e.getMessage());
+            return ResponseEntity.status(500).body(" Failed to upload Excel: " + e.getMessage());
         }
     }
 
@@ -39,14 +39,14 @@ public class ExcelUploadController {
     public ResponseEntity<String> uploadEmployeeDetails(@RequestParam("file") MultipartFile file) {
         try {
             if (file.isEmpty()) {
-                return ResponseEntity.badRequest().body("❌ Please select an Excel file to upload.");
+                return ResponseEntity.badRequest().body("Please select an Excel file to upload.");
             }
 
             excelUploadService.uploadEmployeeDetailsExcel(file);
-            return ResponseEntity.ok("✅ Employee details Excel uploaded successfully.");
+            return ResponseEntity.ok("Employee details Excel uploaded successfully.");
 
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("❌ Failed to upload Employee details Excel: " + e.getMessage());
+            return ResponseEntity.status(500).body("Failed to upload Employee details Excel: " + e.getMessage());
         }
     }
 }

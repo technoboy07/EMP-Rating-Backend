@@ -37,16 +37,36 @@ public interface RatingRepo extends JpaRepository<Rating, Long>{
 
     Optional<Rating> findByEmployee(Employee employee);
 
+//    @Query("SELECT r FROM Rating r WHERE r.employee = :employee AND FUNCTION('DATE', r.ratingDate) = :ratingDate")
+//    Optional<Rating> findByEmployeeAndRatingDate(
+//            @Param("employee") Employee employee,
+//            @Param("ratingDate") LocalDate ratingDate);
+
+
+//    @Query("SELECT AVG(r.rating) FROM Rating r WHERE r.employee.id = :employeeId")
+//    Double findAverageByEmployee(@Param("employeeId") Long employeeId);
+
+    List<Rating>findByTeamLeadEmail(String teamLeadEmail);
+    
+    Rating findByEmployeeAndRatingDateAndRatedBy(
+            Employee employee,
+            LocalDate ratingDate,
+            String ratedBy
+    );
+
+
+//    @Query("SELECT AVG(r.rating) FROM Rating r WHERE r.employee.id = :empId")
+//    Double findAverageByEmployee(@Param("empId") Long empId);
+    
+//    @Query("SELECT AVG(r.rating) FROM Rating r WHERE r.employee.employeeId = :employeeId")
+//    Double findAverageByEmployee(@Param("employeeId") Long employeeId);
+    
     @Query("SELECT r FROM Rating r WHERE r.employee = :employee AND FUNCTION('DATE', r.ratingDate) = :ratingDate")
     Optional<Rating> findByEmployeeAndRatingDate(
             @Param("employee") Employee employee,
             @Param("ratingDate") LocalDate ratingDate);
+    
+ //   Optional<Rating> findByEmployeeAndRatingDate(Employee employee, LocalDate ratingDate);
 
-//    Optional<Rating> findByEmployeeAndRatingDate(Employee employee, LocalDate ratingDate);
-
-    @Query("SELECT AVG(r.rating) FROM Rating r WHERE r.employee.id = :employeeId")
-    Double findAverageByEmployee(@Param("employeeId") Long employeeId);
-
-    List<Rating>findByTeamLeadEmail(String teamLeadEmail);
 
 }

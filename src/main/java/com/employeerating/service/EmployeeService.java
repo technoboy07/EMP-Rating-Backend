@@ -24,7 +24,7 @@ public interface EmployeeService {
 	
 	ResponseEntity<?> deleteDetails(String id);
 
-	byte[] generateEmployeeExcel(String employeeId);
+//	byte[] generateEmployeeExcel(String employeeId);
 
 	byte[] generateEmployeesExcel(String manager) throws InvalidFormatException;
 	

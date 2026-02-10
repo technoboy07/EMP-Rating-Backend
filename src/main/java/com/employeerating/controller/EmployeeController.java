@@ -1,81 +1,57 @@
 package com.employeerating.controller;
 
-import java.io.IOException;
-import java.time.LocalDate;
-import java.util.List;
-
 import com.employeerating.dto.EmployeeResponse;
-import com.employeerating.entity.Employee;
-import com.employeerating.repository.EmployeeRepo;
-import com.employeerating.repository.RatingRepo;
-import com.employeerating.service.RatingService;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.employeerating.dto.FormData;
+import com.employeerating.entity.Employee;
 import com.employeerating.model.FileAttachmentModel;
+import com.employeerating.repository.EmployeeRepo;
 import com.employeerating.service.EmailSchedulerService;
 import com.employeerating.service.EmailSenderService;
 import com.employeerating.service.EmployeeService;
 import com.employeerating.util.ExcelGenerator;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api")
 public class EmployeeController {
-	@Autowired
-	EmployeeService employeeService;
-	@Autowired
-	EmailSenderService emailSenderService;
-	@Autowired
-	EmailSchedulerService scheduleService;
-    @Autowired
-    EmployeeRepo employeeRepo;
 
-    @Autowired
-    RatingRepo ratingRepo;
-    private RatingService ratingService;
-    @Autowired
-    private EmailSchedulerService emailSchedulerService;
+	@Autowired
+	private EmployeeService employeeService;
 
+	@Autowired
+	private EmailSenderService emailSenderService;
 
-    //	@PostMapping("/save")
-//	public ResponseEntity<?> saveEmployee(@RequestBody List<EmployeeDto> employeeDto) {
-//		return employeeService.save(employeeDto);
-//	}
+	@Autowired
+	private EmailSchedulerService emailSchedulerService;
+
+	@Autowired
+	private EmployeeRepo employeeRepo;
+
+	// ================= CREATE / SAVE =================
+
 	@PostMapping("/save")
-	public ResponseEntity<?> saveEmployees(@RequestBody FormData formData ) {
-		System.out.println("Hey i am prinbting");
+	public ResponseEntity<?> saveEmployees(@RequestBody FormData formData) {
+		log.debug("Processing employee save request");
 		return employeeService.save(formData);
 	}
-	@GetMapping("/send")
-	public String sendEmail(@RequestParam(name = "toEmail") String toEmail,
-			@RequestParam(name = "subject") String subject, @RequestParam(name = "body") String body) {
-		FileAttachmentModel model = new FileAttachmentModel(toEmail, body, subject);
-		emailSenderService.sendEmail(model);
-		return "Mail send successfully";
-	}
 
-    @GetMapping("/{employeeId}")
-    public EmployeeResponse getEmployeeById(@PathVariable("employeeId") String employeeId) {
-        return employeeService.fetchEmployeeById(employeeId);
-    }
+	// ================= FETCH =================
 
-	@PostMapping("/sendFile")
-	public String sendEmailWithImageAndFile(@RequestBody FileAttachmentModel model) {
-		emailSenderService.sendEmailWithAttachmentToTl(model);
-		return "email sent successfully to " + model.getToEmail();
+	@GetMapping("/{employeeId}")
+	public EmployeeResponse getEmployeeById(@PathVariable String employeeId) {
+		log.debug("Fetching employee by id: {}", employeeId);
+		return employeeService.fetchEmployeeById(employeeId);
 	}
 
 	@GetMapping("/fetchAll")
@@ -89,187 +65,155 @@ public class EmployeeController {
 	}
 
 	@GetMapping("/get")
-	public ResponseEntity<?> getEmployeeWithSpecificData(
-			@RequestParam(name = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+	public ResponseEntity<?> getEmployeeByDate(
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 		return employeeService.getEmployee(date);
 	}
 
 	@GetMapping("/getByCriteria")
-	public ResponseEntity<?> getEmployeeWithCriteriaManagerEmail(
-			@RequestParam(name = "managerEmail") String managerEmail) {
+	public ResponseEntity<?> getEmployeeByManagerEmail(@RequestParam String managerEmail) {
 		return employeeService.getByCriteria(managerEmail);
 	}
 
-	@GetMapping("/getEmail")
-	public String getMethodName(@RequestParam String param  ) {
-		return new String("Get Email");
+	@GetMapping("/allemployeeids")
+	public ResponseEntity<List<String>> getAllEmployeeIds() {
+		return ResponseEntity.ok(employeeService.getAllEmployeeIds());
 	}
 
-	@GetMapping("/getText")
-	public String getMethodText(@RequestParam(name = "param") String param) {
-		return "hii";
+	// ================= EMAIL =================
+
+	@GetMapping("/send")
+	public String sendEmail(
+			@RequestParam String toEmail,
+			@RequestParam String subject,
+			@RequestParam String body) {
+
+		FileAttachmentModel model = new FileAttachmentModel(toEmail, body, subject);
+		emailSenderService.sendEmail(model);
+		return "Mail sent successfully";
 	}
+
+	@PostMapping("/sendFile")
+	public String sendEmailWithAttachment(@RequestBody FileAttachmentModel model) {
+		emailSenderService.sendEmailWithAttachmentToTl(model);
+		return "Email sent successfully to " + model.getToEmail();
+	}
+
+	// ================= DELETE =================
+
+	@DeleteMapping("/delete/{empid}")
+	public ResponseEntity<?> delete(@PathVariable String empid) {
+		return employeeService.deleteDetails(empid);
+	}
+
+	@GetMapping("/delete")
+	public ResponseEntity<List<String>> deletePreviousRatings() {
+		return ResponseEntity.ok(emailSchedulerService.deletePreviousRatings());
+	}
+
+	// ================= HEALTH =================
 
 	@GetMapping("/health")
 	public String healthCheck() {
 		return "Employee Rating System is running!";
 	}
 
-	@DeleteMapping("/delete/{empid}")
-	public ResponseEntity<?> delete(@PathVariable(name = "empid") String empid) {
-		return employeeService.deleteDetails(empid);
-	}
-
-	@PostMapping("/sendpdf")
-	public void sendingTestMail() {
-		scheduleService.sendEmailToHr();
-	}
-
-	@PostMapping("/")
-	public String sendingTemplate() {
-		return "emailTemplate";
-	}
+	// ================= EXCEL DOWNLOADS =================
 
 	@GetMapping("/employee")
-	public ResponseEntity<byte[]> excelSendToProjectManager(@RequestParam(name="manager")String manager) throws InvalidFormatException{
+	public ResponseEntity<byte[]> excelSendToProjectManager(@RequestParam String manager)
+			throws InvalidFormatException {
+
 		byte[] excelData = employeeService.generateEmployeesExcel(manager);
 
-	    HttpHeaders headers = new HttpHeaders();
-
-	    headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
-
-	    headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=employee_rating.xlsx");
-
-	    return ResponseEntity.ok()
-	            .headers(headers)
-	            .body(excelData);
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=employee_rating.xlsx")
+				.contentType(MediaType.parseMediaType(
+						"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+				.body(excelData);
 	}
 
 	@GetMapping("/employees")
-	public ResponseEntity<byte[]> excelSendToProjectManagerOfficer(@RequestParam(name="managerOfficer")String managerOfficer) throws InvalidFormatException{
+	public ResponseEntity<byte[]> excelSendToPMO(@RequestParam String managerOfficer)
+			throws InvalidFormatException {
+
 		byte[] excelData = employeeService.generateEmployeesExcelForManagerOfficer(managerOfficer);
 
-	    HttpHeaders headers = new HttpHeaders();
-
-	    headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
-	    headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=employee_rating_pmo.xlsx");
-
-	    return ResponseEntity.ok()
-	            .headers(headers)
-	            .body(excelData);
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=employee_rating_pmo.xlsx")
+				.contentType(MediaType.parseMediaType(
+						"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+				.body(excelData);
 	}
+
 	@GetMapping("/employeesHr")
-	public ResponseEntity<byte[]> excelSendToHr() throws InvalidFormatException{
+	public ResponseEntity<byte[]> excelSendToHr() throws InvalidFormatException {
+
 		byte[] excelData = employeeService.generateEmployeesExcelHr();
 
-	    HttpHeaders headers = new HttpHeaders();
-
-	    headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
-	    headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=employee_rating_hr.xlsx");
-
-	    return ResponseEntity.ok()
-	            .headers(headers)
-	            .body(excelData);
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=employee_rating_hr.xlsx")
+				.contentType(MediaType.parseMediaType(
+						"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+				.body(excelData);
 	}
-
-	@GetMapping("/employee/{id}")
-	public ResponseEntity<byte[]> downloadExcel(@PathVariable String id) {
-	    byte[] excelData = employeeService.generateEmployeeExcel(id);
-
-	    HttpHeaders headers = new HttpHeaders();
-
-	    headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
-
-	    headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=employee_rating.xlsx");
-
-	    return ResponseEntity.ok()
-	            .headers(headers)
-	            .body(excelData);
-	}
-
 
 	@GetMapping("/simple-excel")
 	public ResponseEntity<byte[]> downloadSimpleExcel() throws IOException {
-	    byte[] data = ExcelGenerator.generateSimpleExcel();
 
-	    HttpHeaders headers = new HttpHeaders();
-	    headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
-	    headers.setContentDispositionFormData("attachment", "simple_employee_list.xlsx");
-	    headers.setContentLength(data.length);
+		byte[] data = ExcelGenerator.generateSimpleExcel();
 
-	    return ResponseEntity.ok().headers(headers).body(data);
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=simple_employee_list.xlsx")
+				.contentType(MediaType.parseMediaType(
+						"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+				.body(data);
 	}
 
-    @GetMapping("/allemployeeids")
-    public ResponseEntity<List<String>> getAllEmployeeIds() {
-        List<String> ids = employeeService.getAllEmployeeIds();
-        return ResponseEntity.ok(ids);
+	// ================= MAIL EXCEL =================
+
+	@Transactional
+	@GetMapping("/download-excel-mail")
+	public ResponseEntity<byte[]> downloadExcelMail(@RequestParam String pmEmail) throws IOException {
+
+		List<Employee> employees = employeeRepo.findByProjectManagerEmail(pmEmail);
+		log.info("Found {} employees for PM {}", employees.size(), pmEmail);
+
+		employees.forEach(emp -> {
+			if (emp.getRatings() != null) emp.getRatings().size();
+		});
+
+		byte[] excelBytes = ExcelGenerator.generateExcelForEmployeesPM(employees);
+
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_DISPOSITION,
+						ContentDisposition.attachment().filename("Employee_Ratings.xlsx").build().toString())
+				.contentType(MediaType.parseMediaType(
+						"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+				.body(excelBytes);
 	}
 
+	@Transactional
+	@GetMapping("/download-excel-mail-tl")
+	public ResponseEntity<byte[]> downloadExcelMailTl(@RequestParam String teamLeadEmail)
+			throws IOException {
 
-    @GetMapping("/download-excel-mail")
-    @Transactional
-    public ResponseEntity<byte[]> downloadExcelMail(@RequestParam String pmEmail) throws IOException {
-        List<Employee> employees = employeeRepo.findByProjectManagerEmail(pmEmail);
+		List<Employee> employees = employeeRepo.findAll();
 
+		employees.forEach(emp -> {
+			if (emp.getRatings() != null) emp.getRatings().size();
+			if (emp.getEmployeeTasks() != null) emp.getEmployeeTasks().size();
+		});
 
+		if (employees.isEmpty()) {
+			return ResponseEntity.noContent().build();
+		}
 
-        System.out.println("Found employees: " + employees.size());
-        employees.forEach(emp -> {
-            System.out.println("Employee: " + emp.getEmployeeId() + " - " + emp.getEmployeeName());
-            if (emp.getRatings() != null) {
-                System.out.println("Ratings count: " + emp.getRatings().size());
-            } else {
-                System.out.println("No ratings for employee");
-            }
-        });
+		byte[] excelBytes = ExcelGenerator.generateExcelForEmployees(employees);
 
-        employees.forEach(emp -> {
-            if (emp.getRatings() != null) emp.getRatings().size(); // force load
-        });
-
-        byte[] excelBytes = ExcelGenerator.generateExcelForEmployeesPM(employees);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentDisposition(
-                ContentDisposition.attachment().filename("Employee_Ratings.xlsx").build()
-        );
-        headers.setContentType(MediaType.parseMediaType(
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
-
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(excelBytes);
-    }
-
-    @GetMapping("/download-excel-mail-tl")
-    @Transactional
-    public ResponseEntity<byte[]> downloadExcelMailTl(@RequestParam String teamLeadEmail) throws IOException {
-       // List<Employee> employees = employeeRepo.findByTeamLeadEmail(teamLeadEmail);
-
-        List<Employee> employees = employeeRepo.findAll();
-
-        employees.forEach(emp -> {
-            if (emp.getRatings() != null) emp.getRatings().size();         // forces loading ratings
-            if (emp.getEmployeeTasks() != null) emp.getEmployeeTasks().size(); // forces loading tasks
-        });
-
-        if (employees == null || employees.isEmpty()) {
-            // return empty Excel instead of crash
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        }
-
-        byte[] excelBytes = ExcelGenerator.generateExcelForEmployees(employees);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Employee.xlsx");
-
-        return new ResponseEntity<>(excelBytes, headers, HttpStatus.OK);
-    }
-
-    @GetMapping("/delete")
-    public ResponseEntity<List<String>> deletePreviousRatings(){
-       return new ResponseEntity<>(emailSchedulerService.deletePreviousRatings(),HttpStatus.OK);
-    }
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Employee.xlsx")
+				.contentType(MediaType.APPLICATION_OCTET_STREAM)
+				.body(excelBytes);
+	}
 }

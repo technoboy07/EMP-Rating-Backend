@@ -17,27 +17,28 @@ import com.employeerating.service.EmployeeRatingTrackerService;
 
 @Service
 public class EmployeeRatingTrackerServiceImple implements EmployeeRatingTrackerService{
-	
-	@Autowired
-	EmployeeRepo employeeRepo;
-	
-	@Autowired
-	RatingRepo ratingRepo;
-	
-	@Autowired
-	ModelMapper mapper;
-	
-	@Override
-	public ResponseEntity<?> save(EmployeeRatingTrackerDto dto) {
-		Rating rating = mapper.map(dto, Rating.class);
-		Rating savedRating = ratingRepo.save(rating);
-		EmployeeRatingTrackerDto savedDto = mapper.map(savedRating, EmployeeRatingTrackerDto.class);
-		return new ResponseEntity<EmployeeRatingTrackerDto>(savedDto,HttpStatus.OK);
-	}
+
+    @Autowired
+    EmployeeRepo employeeRepo;
+
+    @Autowired
+    RatingRepo ratingRepo;
+
+    @Autowired
+    ModelMapper mapper;
+
+    @Override
+    public ResponseEntity<?> save(EmployeeRatingTrackerDto dto) {
+        Rating rating = mapper.map(dto, Rating.class);
+        Rating savedRating = ratingRepo.save(rating);
+        EmployeeRatingTrackerDto savedDto = mapper.map(savedRating, EmployeeRatingTrackerDto.class);
+        return new ResponseEntity<EmployeeRatingTrackerDto>(savedDto,HttpStatus.OK);
+    }
 
     @Override
     public ResponseEntity<?> tlSubmit(String employeeId) {
-        Employee savedEmployee = employeeRepo.findByEmployeeId(employeeId).get();
+        Employee savedEmployee = employeeRepo.findByEmployeeId(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found: " + employeeId));
 
         if (savedEmployee.getRatings() != null && !savedEmployee.getRatings().isEmpty()) {
             // Get the latest rating

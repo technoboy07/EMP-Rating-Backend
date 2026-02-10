@@ -28,8 +28,6 @@ public class EmployeeRegistrationServiceImpl implements EmployeeRegistrationServ
     @Autowired
     private PasswordEncoder passwordEncoder;
     
-//    @Autowired
-//    private PasswordEncoder passwordEncoder;
 
 	@Override
 	public Employee user(EmployeeRegistrationReqDto dto) {
