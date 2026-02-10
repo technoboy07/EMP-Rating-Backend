@@ -31,7 +31,7 @@ WORKDIR /app
 COPY --from=0 /app/target/*.war app.war
 
 # Expose port 8080
-EXPOSE 8080
+EXPOSE 8081
 
 # Set environment variables for faster startup
 ENV JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
