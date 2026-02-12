@@ -18,7 +18,7 @@ import com.employeerating.entity.EmployeeTask;
 
 public interface EmployeeTaskService {
     
-	void saveTasks(Employee employee, List<EmployeeTaskRequestDto> dtoList, List<MultipartFile> files) throws IOException;
+	void saveTasks(Employee employee,List<EmployeeTaskRequestDto> dtoList, List<MultipartFile> files) throws IOException;
     
 	List<EmployeeTask> getListOfTask(String employeeId);
     
@@ -31,6 +31,7 @@ public interface EmployeeTaskService {
 //	List<TaskSummaryDTO> getTasksWithoutRating(String employeeId);
 
 	List<TaskSummaryDTO> fetchTasksWithoutRating(String employeeId);
+	List<EmployeeTaskResponse> getListOfTasksByDateAndTlName(LocalDate date, String teamLeadName);
 
 	TaskUpdateResponse updateTask(Long taskId, TaskUpdateRequest request);
 

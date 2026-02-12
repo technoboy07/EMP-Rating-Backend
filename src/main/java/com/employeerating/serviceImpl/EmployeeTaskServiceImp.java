@@ -157,6 +157,19 @@ public class EmployeeTaskServiceImp implements EmployeeTaskService {
     }
 
     @Override
+    public List<EmployeeTaskResponse> getListOfTasksByDateAndTlName(LocalDate date, String teamLeadName) {
+    
+        List<EmployeeTask> tasks =
+                taskRepository.findByTeamLeadNameAndWorkDate(teamLeadName, date);
+    
+        if (tasks.isEmpty()) {
+            return List.of(emptyResponse());
+        }
+    
+        return mapTasks(tasks);
+    }
+
+    @Override
     public List<EmployeeTaskResponse> getListOfTasksByDateAndEmployeeId(LocalDate date, String employeeId) {
 
         log.debug("Fetching tasks for employee {} on {}", employeeId, date);
@@ -302,18 +315,5 @@ public class EmployeeTaskServiceImp implements EmployeeTaskService {
         return new ArrayList<>(map.values());
     }
 
-    public List<EmployeeTaskResponse> getListOfTasksByDateAndTlName(LocalDate date, String teamLeadName) {
-
-        EmployeeTaskResponse empty = emptyResponse(); // you already have this helper
-    
-        List<EmployeeTask> tasks =
-                taskRepository.findByTeamLeadNameAndWorkDate(teamLeadName, date);
-    
-        if (tasks.isEmpty()) {
-            return List.of(empty);
-        }
-    
-        return mapTasks(tasks); // re‑use existing mapper
-    }
 }
 
