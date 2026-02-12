@@ -1,6 +1,7 @@
 package com.employeerating.serviceImpl;
 
 import com.employeerating.dto.*;
+import com.employeerating.dto.TaskSummaryDTO;
 import com.employeerating.entity.Employee;
 import com.employeerating.entity.EmployeeTask;
 import com.employeerating.exception.EmployeeNotFoundException;
@@ -42,9 +43,7 @@ public class EmployeeTaskServiceImp implements EmployeeTaskService {
     // ================= SAVE TASKS =================
 
     @Override
-    public void saveTasks(Employee employee,
-                          List<EmployeeTaskRequestDto> dtoList,
-                          List<MultipartFile> files) throws IOException {
+    public void saveTasks(Employee employee, List<EmployeeTaskRequestDto> dtoList, List<MultipartFile> files) throws IOException {
 
         Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {
@@ -177,7 +176,13 @@ public class EmployeeTaskServiceImp implements EmployeeTaskService {
 
     @Override
     public List<TaskSummaryDTO> fetchTasksWithoutRating(String employeeId) {
-        return List.of();
+        // Calculate current month's start and end dates
+        LocalDate now = LocalDate.now();
+        LocalDate startDate = now.withDayOfMonth(1); // First day of current month
+        LocalDate endDate = now.withDayOfMonth(now.lengthOfMonth()); // Last day of current month
+        
+        // Call repository method to fetch unrated tasks
+        return taskRepository.fetchTasksWithoutRating(employeeId, startDate, endDate);
     }
 
     // ================= PROCESS =================
