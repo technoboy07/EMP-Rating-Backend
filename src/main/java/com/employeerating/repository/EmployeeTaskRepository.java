@@ -19,11 +19,18 @@ EmployeeTaskRepository extends JpaRepository<EmployeeTask, Long> {
 
     List<EmployeeTask> findByEmployee(Employee employee);
 
-    //    @Query("SELECT t FROM EmployeeTask t WHERE t.employee.employeeId = :employeeId ORDER BY t.createdAt ASC")
-    List<EmployeeTask> findByEmployeeEmployeeIdOrderByCreatedAtAsc(@Param("employeeId") String employeeId);
-    List<EmployeeTask> findByTeamLeadNameAndWorkDate(String teamLeadName, LocalDate workDate);
-//    List<EmployeeTask> findByTeamLeadEmployeeIdAndWorkDate(String teamLeadEmployeeIdName, LocalDate workDate);
+// ... existing code above ...
 
+@Query("SELECT t FROM EmployeeTask t " +
+"WHERE LOWER(t.teamLeadName) = LOWER(:teamLeadName) " +
+"ORDER BY t.createdAt ASC")
+List<EmployeeTask> findByTeamLeadNameOrderByCreatedAtAsc(@Param("teamLeadName") String teamLeadName);
+
+List<EmployeeTask> findByTeamLeadNameAndWorkDate(String teamLeadName, LocalDate workDate);
+
+// List<EmployeeTask> findByTeamLeadEmployeeIdAndWorkDate(String teamLeadEmployeeIdName, LocalDate workDate);
+
+// ... existing code below ...
     Optional<EmployeeTask> findByTaskNameAndEmployeeAndWorkDate(String taskName, Employee employee, LocalDate workDate);
 
 

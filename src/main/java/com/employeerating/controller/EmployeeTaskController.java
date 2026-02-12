@@ -50,6 +50,15 @@ public class EmployeeTaskController {
     }
 
 
+    @GetMapping("/by-date-tlname")
+    public ResponseEntity<List<EmployeeTaskResponse>> getTasksByDateAndTeamLeadName(
+        @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+        @RequestParam("teamLeadName") String teamLeadName) {
+
+    List<EmployeeTaskResponse> tasks = taskService.getListOfTasksByDateAndTlName(date, teamLeadName);
+    return ResponseEntity.ok(tasks);
+    }
+
 
     @GetMapping("/{employeeId}")
     public ResponseEntity<?> getListOfTask(@PathVariable String employeeId) {

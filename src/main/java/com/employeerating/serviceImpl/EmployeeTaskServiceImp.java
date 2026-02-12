@@ -301,4 +301,19 @@ public class EmployeeTaskServiceImp implements EmployeeTaskService {
 
         return new ArrayList<>(map.values());
     }
+
+    public List<EmployeeTaskResponse> getListOfTasksByDateAndTlName(LocalDate date, String teamLeadName) {
+
+        EmployeeTaskResponse empty = emptyResponse(); // you already have this helper
+    
+        List<EmployeeTask> tasks =
+                taskRepository.findByTeamLeadNameAndWorkDate(teamLeadName, date);
+    
+        if (tasks.isEmpty()) {
+            return List.of(empty);
+        }
+    
+        return mapTasks(tasks); // re‑use existing mapper
+    }
 }
+
