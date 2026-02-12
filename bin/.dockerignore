@@ -1,0 +1,39 @@
+# Maven
+target/
+!target/*.jar
+!target/*.war
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Deployment files
+deployment-package/
+*.zip
+*.war
+
+# Test files
+src/test/
+
+# Documentation
+*.md
+!README.md 

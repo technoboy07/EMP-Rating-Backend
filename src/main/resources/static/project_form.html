@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Employee Entry Form</title>
+</head>
+<body>
+  <h2>Employee Form</h2>
+
+  <form id="employeeForm">
+    <label>Name:</label>
+    <input type="text" id="name" required><br><br>
+
+    <label>Email:</label>
+    <input type="email" id="email" required><br><br>
+
+    <label>Project Manager:</label>
+    <input type="text" id="projectManager"><br><br>
+
+    <label>Project Manager Email:</label>
+    <input type="email" id="projectManagerEmail"><br><br>
+
+    <label>Start Date:</label>
+    <input type="date" id="startDate" required><br><br>
+
+    <label>End Date:</label>
+    <input type="date" id="endDate" required><br><br>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <p id="response"></p>
+
+  <script>
+    document.getElementById("employeeForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const employee = {
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        projectManager: document.getElementById("projectManager").value,
+        projectManagerEmail: document.getElementById("projectManagerEmail").value,
+        startDate: document.getElementById("startDate").value,
+        endDate: document.getElementById("endDate").value
+      };
+
+      fetch("http://localhost:8080/api/save", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(employee)
+      })
+      .then(response => response.text())
+      .then(result => {
+        document.getElementById("response").innerText = result;
+console.log(response);
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        document.getElementById("response").innerText = "Error submitting form!";
+      });
+    });
+  </script>
+</body>
+</html>
