@@ -20,6 +20,12 @@ public interface EmployeeTaskRepository extends JpaRepository<EmployeeTask, Long
     // All tasks for a given Employee entity
     List<EmployeeTask> findByEmployee(Employee employee);
 
+    // All tasks for an employee by employeeId, ordered by createdAt (used by TaskServiceImple)
+    @Query("SELECT t FROM EmployeeTask t " +
+           "WHERE t.employee.employeeId = :employeeId " +
+           "ORDER BY t.createdAt ASC")
+    List<EmployeeTask> findByEmployeeEmployeeIdOrderByCreatedAtAsc(@Param("employeeId") String employeeId);
+
     // All tasks for a given Team Lead name, ordered by createdAt (name-based TL view)
     @Query("SELECT t FROM EmployeeTask t " +
            "WHERE LOWER(t.teamLeadName) = LOWER(:teamLeadName) " +
