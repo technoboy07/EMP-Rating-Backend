@@ -67,14 +67,16 @@ public interface EmployeeTaskRepository extends JpaRepository<EmployeeTask, Long
 
     // Unrated tasks for current cycle (used by EmployeeTaskController.fetchTasksWithoutRating)
     @Query("SELECT new com.employeerating.dto.TaskSummaryDTO(t.taskId, t.taskName, t.workDate) " +
-           "FROM EmployeeTask t " +
-           "WHERE t.employeeId = :employeeId " +
-           "AND t.workDate BETWEEN :startDate AND :endDate " +
-           "AND NOT EXISTS ( " +
-           "    SELECT 1 FROM Rating r " +
-           "    WHERE r.employee.employeeId = :employeeId " +
-           "    AND r.ratingDate = t.workDate " +
-           ")")
+    "FROM EmployeeTask t " +
+    "WHERE t.employeeId = :employeeId " +
+    "AND t.workDate BETWEEN :startDate AND :endDate " +
+    "AND NOT EXISTS ( " +
+    "    SELECT 1 FROM Rating r " +
+    "    JOIN Employee tl ON tl.employeeId = r.ratedBy " +
+    "    WHERE r.employee.employeeId = :employeeId " +
+    "    AND r.ratingDate = t.workDate " +
+    "    AND (tl.employeeName = t.teamLeadName OR r.ratedBy = t.teamLeadId) " +
+    ")")
     List<TaskSummaryDTO> fetchTasksWithoutRating(
             @Param("employeeId") String employeeId,
             @Param("startDate") LocalDate startDate,
