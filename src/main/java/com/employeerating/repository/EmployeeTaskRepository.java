@@ -75,7 +75,7 @@ public interface EmployeeTaskRepository extends JpaRepository<EmployeeTask, Long
     "    JOIN Employee tl ON tl.employeeId = r.ratedBy " +
     "    WHERE r.employee.employeeId = :employeeId " +
     "    AND r.ratingDate = t.workDate " +
-    "    AND tl.employeeName = t.teamLeadName " +
+    "    AND LOWER(tl.employeeName) = LOWER(t.teamLeadName) " +
     ")")
     
     List<TaskSummaryDTO> fetchTasksWithoutRating(
