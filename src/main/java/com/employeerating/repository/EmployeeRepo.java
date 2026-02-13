@@ -36,6 +36,9 @@ public interface EmployeeRepo extends JpaRepository<Employee,Long>{
 //    Optional<Employee> findByEmployeeName(String employeeName); // ✅ add this
     List<Employee> findByEmployeeNameIgnoreCase( String employeeName);
 
+
+    // In EmployeeRepo.java - Using Spring Data method naming
+    List<Employee> findByEmployeeRoleContainingIgnoreCase(String role);
 //    List<Employee>findByEmployeeName(String employeeName);
 
 
@@ -46,9 +49,6 @@ public interface EmployeeRepo extends JpaRepository<Employee,Long>{
     @Query("SELECT DISTINCT e.pmoEmail FROM Employee e WHERE LOWER(e.employeeRole) = 'pmo'")
     List<String> findDistinctPmoEmails();
 
-    // Find all team leads by role
-    @Query("SELECT e.employeeName FROM Employee e WHERE LOWER(e.employeeRole) LIKE '%team%lead%' OR LOWER(e.employeeRole) LIKE '%teamlead%'")
-List<String> findAllTeamLeads();
 
 }
 
