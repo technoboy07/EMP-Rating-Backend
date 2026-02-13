@@ -59,6 +59,16 @@ public class EmployeeController {
 		return employeeService.fetchAll();
 	}
 
+	@GetMapping("/teamleads/names")
+public ResponseEntity<List<String>> getAllTeamLeadNames() {
+    List<Employee> teamLeads = employeeRepo.findAllTeamLeads();
+    List<String> teamLeadNames = teamLeads.stream()
+        .map(Employee::getEmployeeName)
+        .filter(name -> name != null && !name.trim().isEmpty())
+        .distinct()
+        .collect(Collectors.toList());
+    return ResponseEntity.ok(teamLeadNames);
+}
 	@GetMapping("/fetchAll/{teamLeadEmail}")
 	public ResponseEntity<?> fetchAllByTeamLeadEmail(@PathVariable String teamLeadEmail) {
 		return employeeService.fetchAllByTeamLeadEmail(teamLeadEmail);

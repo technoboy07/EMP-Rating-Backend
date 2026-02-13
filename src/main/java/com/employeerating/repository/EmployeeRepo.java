@@ -46,6 +46,9 @@ public interface EmployeeRepo extends JpaRepository<Employee,Long>{
     @Query("SELECT DISTINCT e.pmoEmail FROM Employee e WHERE LOWER(e.employeeRole) = 'pmo'")
     List<String> findDistinctPmoEmails();
 
+    // Find all team leads by role
+    @Query("SELECT e.employeeName FROM Employee e WHERE LOWER(e.employeeRole) LIKE '%team%lead%' OR LOWER(e.employeeRole) LIKE '%teamlead%'")
+List<String> findAllTeamLeads();
 
 }
 
