@@ -35,6 +35,22 @@ public interface EmployeeTaskRepository extends JpaRepository<EmployeeTask, Long
     // Tasks for a given Team Lead name on a specific date (name-based TL + date)
     List<EmployeeTask> findByTeamLeadNameAndWorkDate(String teamLeadName, LocalDate workDate);
 
+    // For Team Lead View: Fetch unrated tasks by Team Lead name (name-based, filters out already-rated tasks)
+    @Query("SELECT t FROM EmployeeTask t " +
+           "WHERE LOWER(t.teamLeadName) = LOWER(:teamLeadName) " +
+           "AND t.workDate = :workDate " +
+           "AND NOT EXISTS ( " +
+           "    SELECT 1 FROM Rating r " +
+           "    JOIN Employee tl ON tl.employeeId = r.ratedBy " +
+           "    WHERE r.employee.employeeId = t.employeeId " +
+           "    AND r.ratingDate = t.workDate " +
+           "    AND LOWER(tl.employeeName) = LOWER(t.teamLeadName) " +
+           ")")
+    List<EmployeeTask> findUnratedTasksByTeamLeadName(
+        @Param("teamLeadName") String teamLeadName, 
+        @Param("workDate") LocalDate workDate
+    );
+
     // Task by name + Employee entity + date
     Optional<EmployeeTask> findByTaskNameAndEmployeeAndWorkDate(String taskName, Employee employee, LocalDate workDate);
 

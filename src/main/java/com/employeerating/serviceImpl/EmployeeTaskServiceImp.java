@@ -160,7 +160,7 @@ public class EmployeeTaskServiceImp implements EmployeeTaskService {
     public List<EmployeeTaskResponse> getListOfTasksByDateAndTlName(LocalDate date, String teamLeadName) {
     
         List<EmployeeTask> tasks =
-                taskRepository.findByTeamLeadNameAndWorkDate(teamLeadName, date);
+                taskRepository.findUnratedTasksByTeamLeadName(teamLeadName, date);
     
         if (tasks.isEmpty()) {
             return List.of(emptyResponse());
