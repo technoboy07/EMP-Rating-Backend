@@ -38,6 +38,15 @@ public class EmployeeRegistrationServiceImpl implements EmployeeRegistrationServ
             throw new IllegalArgumentException("Employee ID already exists");
         }
 
+    // Add email validation here
+    String emailToCheck = dto.getEmployeeEmail() != null && !dto.getEmployeeEmail().trim().isEmpty() 
+        ? dto.getEmployeeEmail() 
+        : "temp@company.com";
+    
+    if (repo.existsByEmployeeEmail(emailToCheck)) {
+        throw new IllegalArgumentException("Email address already exists");
+    }
+    
         Employee employee = new Employee();
         employee.setEmployeeId(dto.getEmployeeId());
         employee.setEmployeeName(dto.getEmployeeName());
